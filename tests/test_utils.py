@@ -1,5 +1,5 @@
 import pytest
-from python_interpreter.utils import *
+from src_py.utils import *
 import numpy as np
 
 
@@ -24,3 +24,13 @@ def test_read_tile():
     assert (direction, instruction) == (7, 31)
 
 
+def write_int(x, y, world, value):
+    assert True
+
+
+def write_float(x, y, world, value):
+    assert True
+
+
+def write_char(x, y, world, value):
+    assert True

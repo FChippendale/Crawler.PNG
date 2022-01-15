@@ -1,6 +1,6 @@
 import pytest
-from python_interpreter.tile_functions import *
-from python_interpreter.utils import create_dummy_tile
+from src_py.tile_functions import *
+from src_py.utils import create_dummy_tile
 import numpy as np
 
 
@@ -38,6 +38,14 @@ def test_float_tile():
     world[0][1] = create_dummy_tile(6, 6)
 
     assert float_tile(1, 1, world) == np.float32(-12345.67)
+
+
+def test_char_tile():
+    assert True
+
+
+def test_write_tile():
+    assert True
 
 
 def test_evaluate():
@@ -235,6 +243,7 @@ def test_modulo_tile():
 def test_equal_tile():
     world = np.zeros((5, 5, 8), dtype=bool)
 
+    # int(4) == int(4) ?
     world[2][2] = create_dummy_tile(1, 8)
     world[1][1] = create_dummy_tile(0, 11)
     world[3][3] = create_dummy_tile(0, 11)
@@ -244,7 +253,7 @@ def test_equal_tile():
     
     assert evaluate(2, 2, world) == True
 
-    # float 4.0
+    # float(4.0) == int(4) ?
     world[1][1] = create_dummy_tile(0, 12)
 
     world[1][0] = create_dummy_tile(0, 0)
@@ -252,7 +261,7 @@ def test_equal_tile():
     world[1][2] = create_dummy_tile(4, 0)
     world[0][1] = create_dummy_tile(2, 0)
 
-    assert evaluate(2, 2, world) == False
+    assert evaluate(2, 2, world) == True
 
 
 def test_greater_tile():
@@ -304,6 +313,7 @@ def test_lesser_tile():
 def test_not_tile():
     world = np.zeros((5, 5, 8), dtype=bool)
 
+    # not(int(4) == int(4)) ?
     world[2][2] = create_dummy_tile(1, 8)
     world[3][1] = create_dummy_tile(5, 7)
 
@@ -315,7 +325,7 @@ def test_not_tile():
     
     assert evaluate(3, 1, world) == False
 
-    # float 4.0
+    # not(not(float(4.0) == int(4))) ?
     world[1][1] = create_dummy_tile(0, 12)
     world[4][0] = create_dummy_tile(5, 7)
 
@@ -324,5 +334,28 @@ def test_not_tile():
     world[1][2] = create_dummy_tile(4, 0)
     world[0][1] = create_dummy_tile(2, 0)
 
-    assert evaluate(4, 0, world) == False
+    assert evaluate(4, 0, world) == True
 
+
+def test_ptr_tile():
+    assert True
+
+
+def test_array_tile():
+    assert True
+
+
+def test_array_access_tile():
+    assert True
+
+
+def test_print_tile():
+    assert True
+
+
+def test_input_tile():
+    assert True
+
+
+def test_write_tile():
+    assert True

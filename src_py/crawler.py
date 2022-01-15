@@ -1,5 +1,5 @@
-from python_interpreter.utils import get_direction_offset, read_tile
-from python_interpreter.tile_functions import evaluate
+from src_py.utils import get_direction_offset, read_tile
+from src_py.tile_functions import evaluate
 
 class Crawler:
     def __init__(self, pos_x, pos_y, world):
@@ -11,10 +11,12 @@ class Crawler:
         self.isdead = False
         
         self.crawler_functions = {
+            20: self.if_tile,
             21: self.die,
             22: self.goto,
         }
     
+
     def __call__(self):
         # if the crawler has children, remove the dead ones
         while self.children and self.children[0].isdead:
@@ -27,12 +29,14 @@ class Crawler:
             
         self.step()
         self.execute()
-        
+
+       
     def step(self):
         direction, _ = read_tile(self.x, self.y, self.world)
         move_x, move_y = get_direction_offset(direction)
         self.x += move_x
         self.y += move_y
+
 
     def execute(self):
         _, instruction = read_tile(self.x, self.y, self.world)
@@ -41,10 +45,16 @@ class Crawler:
             return
         
         evaluate(self.x, self.y, self.world)
-        
+
+
+    def if_tile(self):
+        pass
+
+
     def die(self):
         self.isdead = True
-        
+
+   
     def goto(self):
         direction, _ = read_tile(self.x, self.y, self.world)
         x_tile_offset = get_direction_offset((direction+6) % 8)
