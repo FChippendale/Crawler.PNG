@@ -1,7 +1,6 @@
 numpy
 Pillow
 argparse
-os
 errno
 pytest
 pytest-cov
