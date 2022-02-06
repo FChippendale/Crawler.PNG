@@ -30,13 +30,13 @@ class Crawler:
             return
 
         self.execute()  
-        self.step()
-        
+        self.step()       
 
        
     def step(self):
         direction, _ = read_tile(self.x, self.y, self.world)
         move_x, move_y = get_direction_offset(direction)
+        # check step stays inside image
         self.x += move_x
         self.y += move_y
 
@@ -51,7 +51,17 @@ class Crawler:
 
 
     def if_tile(self):
-        pass
+        direction, _ = read_tile(self.x, self.y, self.world)
+        cond_x, cond_y = get_direction_offset(direction)
+        condition = evaluate(self.x + cond_x, self.y + cond_y, self.world)
+        # check condition is bool
+        if condition:
+            move_x, move_y = get_direction_offset((direction+6) % 8)
+        else:
+            move_x, move_y = get_direction_offset((direction+2) % 8)
+
+        self.x += move_x
+        self.y += move_y
 
 
     def die(self):
@@ -65,5 +75,6 @@ class Crawler:
         
         child_x = evaluate(self.x + x_tile_offset[0], self.y + x_tile_offset[1], self.world)
         child_y = evaluate(self.x + y_tile_offset[0], self.y + y_tile_offset[1], self.world)
+        # check child_x, child_y are valid coordinates
         child = Crawler(child_x, child_y, self.world)
         self.children.append(child)
