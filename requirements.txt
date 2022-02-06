@@ -1,4 +1,5 @@
 numpy
+PIL
 pytest
 pytest-cov
 pytest-github-actions-annotate-failures
