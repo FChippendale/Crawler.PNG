@@ -1,4 +1,3 @@
-from dis import Instruction
 from src_py.utils import get_direction_offset, read_tile
 from src_py.functions import evaluate
 
