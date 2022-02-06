@@ -3,7 +3,7 @@ import numpy as np
 
 def create_dummy_tile(direction, instruction):
     value = np.uint8(direction*32 + instruction)
-    return np.unpackbits(value)
+    return value
 
 
 def get_direction_offset(direction):
@@ -12,9 +12,25 @@ def get_direction_offset(direction):
 
 
 def read_tile(x, y, world):
-    bits = world[x, y]
-    data = np.packbits(bits, axis=-1).squeeze()
-    direction = data // 32
-    instruction = data % 32
+    data = world[x, y].squeeze()
+    direction = np.int32(data // 32)
+    instruction = np.int32(data % 32)
     return direction, instruction
 
+
+def read_tile_data(x, y, world):
+    direction, _ = read_tile(x, y, world)
+    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
+    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
+    data_positions = centers[:, None, :] + direction_offsets
+    value_bytes = world[data_positions[..., 0], data_positions[..., 1]]
+    return value_bytes
+
+
+def write_tile_data(x, y, world, value):
+    direction, _ = read_tile(x, y, world)
+    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
+    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
+    data_positions = centers[:, None, :] + direction_offsets
+    byte_data = np.frombuffer(value.tobytes(), dtype=np.uint8).reshape(len(np.atleast_1d(value)), 4, 1)
+    world[data_positions[..., 0], data_positions[..., 1]] = byte_data

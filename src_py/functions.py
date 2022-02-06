@@ -1,29 +1,30 @@
 import numpy as np
 from src_py.utils import get_direction_offset, read_tile
+from src_py.types import *
 
 
 def evaluate(x, y, world):
     evaluate_functions = {
-        0:    arrow_tile,
-        1:    addition_tile,
-        2:    subtraction_tile,
-        3:    multiplication_tile,
-        4:    division_tile,
-        5:    floor_division_tile,
-        6:    modulo_tile,
+        0:    read_arrow,
+        1:    addition,
+        2:    subtraction,
+        3:    multiplication,
+        4:    division,
+        5:    floor_division,
+        6:    modulo,
         7:    not_tile,
         8:    equal_tile,
         9:    greater_tile,
         10:   lesser_tile,
-        11:   int_tile,
-        12:   float_tile,
-        13:   char_tile,
-        14:   ptr_tile,
-        15:   array_tile,
+        11:   read_int,
+        12:   read_float,
+        13:   read_char,
+        14:   read_ptr,
+        15:   read_array,
         16:   print_tile,
         17:   input_tile,
         18:   write_tile,
-        19:   array_access_tile,
+        19:   read_array_index,
 
         31:   null_tile,
     }
@@ -33,13 +34,37 @@ def evaluate(x, y, world):
         return evaluate_functions[instruction](x, y, world)
 
 
-def arrow_tile(x, y, world):
+def write(x, y, world, value):
+    write_functions = {
+        0: write_arrow,
+        11: write_int,
+        12: write_float, 
+        13: write_char,
+        14: write_ptr,
+        15: write_array,
+        19: write_array_index,
+    }
+    _, instruction = read_tile(x, y, world)
+    if instruction in write_functions:
+        write_functions[instruction](x, y, world, value)
+        return
+
+    raise TypeError("Attempted to write to tile that could not be written to")
+
+
+def read_arrow(x, y, world):
     direction, _ = read_tile(x, y, world)
     move_x, move_y = get_direction_offset(direction)
     return evaluate(x+move_x, y+move_y, world)
 
 
-def addition_tile(x, y, world):
+def write_arrow(x, y, world, value):
+    direction, _ = read_tile(x, y, world)
+    move_x, move_y = get_direction_offset(direction)
+    return write(x+move_x, y+move_y, world, value)
+
+
+def addition(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -56,7 +81,7 @@ def addition_tile(x, y, world):
     return A + B
 
 
-def subtraction_tile(x, y, world):
+def subtraction(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -73,7 +98,7 @@ def subtraction_tile(x, y, world):
     return A - B
 
 
-def multiplication_tile(x, y, world):
+def multiplication(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -90,7 +115,7 @@ def multiplication_tile(x, y, world):
     return A * B
 
 
-def division_tile(x, y, world):
+def division(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -104,7 +129,7 @@ def division_tile(x, y, world):
     return (A / B).astype(np.float32)
 
 
-def floor_division_tile(x, y, world):
+def floor_division(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -118,7 +143,7 @@ def floor_division_tile(x, y, world):
     return (A // B).astype(np.int32)
 
 
-def modulo_tile(x, y, world):
+def modulo(x, y, world):
     direction, _ = read_tile(x, y, world)
     
     A_tile_offset = get_direction_offset((direction+6) % 8)
@@ -195,37 +220,7 @@ def lesser_tile(x, y, world):
     return (A < B).astype(bool)
 
 
-def int_tile(x, y, world):
-    direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
-    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
-    data_positions = centers[:, None, :] + direction_offsets
-    value_bytes = np.packbits(world[data_positions[..., 0], data_positions[..., 1]], axis=-1)
-    value = np.frombuffer(value_bytes, dtype = np.int32).squeeze()[()]
-    return value
-
-
-def float_tile(x, y, world):
-    direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
-    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
-    data_positions = centers[:, None, :] + direction_offsets
-    value_bytes = np.packbits(world[data_positions[..., 0], data_positions[..., 1]], axis=-1)
-    value = np.frombuffer(value_bytes, dtype = np.float32).squeeze()[()]
-    return value
-
-
-def char_tile(x, y, world):
-    direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
-    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
-    data_positions = centers[:, None, :] + direction_offsets
-    value_bytes = np.packbits(world[data_positions[..., 0], data_positions[..., 1]], axis=-1)
-    string = (b'\xff\xfe\x00\x00' + value_bytes.tobytes()).decode("utf-32")
-    return string
-
-
-def array_tile(x, y, world):
+def read_array(x, y, world):
     direction, _ = read_tile(x, y, world)
     type_offset = get_direction_offset(direction)
     length_offset = get_direction_offset((direction+4) % 8)
@@ -243,13 +238,13 @@ def array_tile(x, y, world):
     assert np.all(world[data_locations[:, 0], data_locations[:, 1]] == world[x + type_offset[0], y + type_offset[1]])
     
     if array_type == 11:
-        return int_tile(data_locations[:, 0], data_locations[:, 1], world)
+        return read_int(data_locations[:, 0], data_locations[:, 1], world)
 
     if array_type == 12:
-        return float_tile(data_locations[:, 0], data_locations[:, 1], world)
+        return read_float(data_locations[:, 0], data_locations[:, 1], world)
 
     if array_type == 13:
-        return char_tile(data_locations[:, 0], data_locations[:, 1], world)
+        return read_char(data_locations[:, 0], data_locations[:, 1], world)
 
     if array_type == 14:
         pointer_list = []
@@ -259,7 +254,11 @@ def array_tile(x, y, world):
         return pointer_list
 
 
-def array_access_tile(x, y, world):
+def write_array(x, y, world, value):
+    pass
+
+
+def read_array_index(x, y, world):
     direction, _ = read_tile(x, y, world)
     index_offset = get_direction_offset((direction+6) % 8)
     array_offset = get_direction_offset((direction+2) % 8)
@@ -282,7 +281,11 @@ def array_access_tile(x, y, world):
     return array[index]
 
 
-def ptr_tile(x, y, world):
+def write_array_index(x, y, world, value):
+    pass
+
+
+def read_ptr(x, y, world):
     direction, _ = read_tile(x, y, world)
     x_tile_offset = get_direction_offset((direction+6) % 8)
     y_tile_offset = get_direction_offset((direction+2) % 8)
@@ -296,6 +299,22 @@ def ptr_tile(x, y, world):
     assert 0 <= ptr_y < world.shape[1], 'Pointer Y coordinate is out of range'
 
     return evaluate(ptr_x, ptr_y, world)
+
+
+def write_ptr(x, y, world, value):
+    direction, _ = read_tile(x, y, world)
+    x_tile_offset = get_direction_offset((direction+6) % 8)
+    y_tile_offset = get_direction_offset((direction+2) % 8)
+    
+    ptr_x = evaluate(x + x_tile_offset[0], y + x_tile_offset[1], world)
+    assert isinstance(ptr_x, np.int32), 'Pointer coordinates must be of type: "Int"'
+    assert 0 <= ptr_x < world.shape[0], 'Pointer X coordinate is out of range'
+
+    ptr_y = evaluate(x + y_tile_offset[0], y + y_tile_offset[1], world)
+    assert isinstance(ptr_y, np.int32), 'Pointer coordinates must be of type: "Int"'
+    assert 0 <= ptr_y < world.shape[1], 'Pointer Y coordinate is out of range'
+
+    return write(ptr_x, ptr_y, world, value)
 
 
 def print_tile(x, y, world):
@@ -331,88 +350,5 @@ def write_tile(x, y, world):
 def null_tile(x, y, world):
     raise IndexError('Attempted to evaluate non-program memory at coordinates: {}-{}'.format(x, y))
 
-
-
-
-
-def write(x, y, world, value):
-    write_functions = {
-        0: write_arrow,
-        11: write_int,
-        12: write_float, 
-        13: write_char,
-        14: write_ptr,
-        15: write_array,
-        19: write_array_access,
-    }
-    _, instruction = read_tile(x, y, world)
-    if instruction in write_functions:
-        write_functions[instruction](x, y, world, value)
-        return
-
-    raise TypeError("Attempted to write to tile that could not be written to")
-
-
-def write_tile_data(x, y, world, value):
-    direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
-    centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
-    data_positions = centers[:, None, :] + direction_offsets
-    byte_data = np.frombuffer(value.tobytes(), dtype=np.uint8).reshape(len(np.atleast_1d(value)), 4, 1)
-    world[data_positions[..., 0], data_positions[..., 1]] = np.unpackbits(byte_data, axis=-1)
-
-    
-def write_arrow(x, y, world, value):
-    direction, _ = read_tile(x, y, world)
-    move_x, move_y = get_direction_offset(direction)
-    return write(x+move_x, y+move_y, world, value)
-
-    
-def write_int(x, y, world, value):
-    assert value.dtype==np.int32
-    if hasattr(value, '__len__'):
-        assert len(value) == 1, "Tried to write too many values to Int tile"
-
-    write_tile_data(x, y, world, value)
     
 
-def write_float(x, y, world, value):
-    assert value.dtype==np.float32
-    if hasattr(value, '__len__'):
-        assert len(value) == 1, "Tried to write too many values to Float tile"
-
-    write_tile_data(x, y, world, value)
-    
-
-def write_char(x, y, world, value):
-    assert isinstance(value, str)
-    if hasattr(value, '__len__'):
-        assert len(value) == 1, "Tried to write too many values to Char tile"
-
-    value_data = value.encode('utf-32')
-    value_int = np.frombuffer(value_data[4:], dtype=np.int32)
-    write_tile_data(x, y, world, value_int)
-    
-
-def write_ptr(x, y, world, value):
-    direction, _ = read_tile(x, y, world)
-    x_tile_offset = get_direction_offset((direction+6) % 8)
-    y_tile_offset = get_direction_offset((direction+2) % 8)
-    
-    ptr_x = evaluate(x + x_tile_offset[0], y + x_tile_offset[1], world)
-    assert isinstance(ptr_x, np.int32), 'Pointer coordinates must be of type: "Int"'
-    assert 0 <= ptr_x < world.shape[0], 'Pointer X coordinate is out of range'
-
-    ptr_y = evaluate(x + y_tile_offset[0], y + y_tile_offset[1], world)
-    assert isinstance(ptr_y, np.int32), 'Pointer coordinates must be of type: "Int"'
-    assert 0 <= ptr_y < world.shape[1], 'Pointer Y coordinate is out of range'
-
-    return write(ptr_x, ptr_y, world, value)
-    
-
-def write_array(x, y, world, value):
-    pass
-    
-
-def write_array_access(x, y, world, value):
-    pass

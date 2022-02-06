@@ -1,55 +1,11 @@
 import pytest
-from src_py.tile_functions import *
+from src_py.functions import *
 from src_py.utils import create_dummy_tile
 import numpy as np
 
 
-def test_int_tile():
-    world = np.zeros((3, 3, 8), dtype=bool)
-    
-    world[1][1] = create_dummy_tile(0, 11)
-    world[1][0] = create_dummy_tile(0, 1)
-    assert int_tile(1, 1, world) == 1
-
-    world[1][0] = create_dummy_tile(7, 31)
-    world[1][2] = create_dummy_tile(7, 31)
-    world[0][1] = create_dummy_tile(7, 31)
-    world[2][1] = create_dummy_tile(7, 31)
-    assert int_tile(1, 1, world) == -1
-
-
-def test_float_tile():
-    world = np.zeros((3, 3, 8), dtype=bool)
-    
-    world[1][1] = create_dummy_tile(0, 12)
-
-    world[1][0] = create_dummy_tile(5, 14)
-    world[2][1] = create_dummy_tile(7, 6)
-    world[1][2] = create_dummy_tile(2, 0)
-    world[0][1] = create_dummy_tile(2, 6)
-
-    assert float_tile(1, 1, world) == np.float32(12345.67)
-
-    world[1][1] = create_dummy_tile(0, 12)
-
-    world[1][0] = create_dummy_tile(5, 14)
-    world[2][1] = create_dummy_tile(7, 6)
-    world[1][2] = create_dummy_tile(2, 0)
-    world[0][1] = create_dummy_tile(6, 6)
-
-    assert float_tile(1, 1, world) == np.float32(-12345.67)
-
-
-def test_char_tile():
-    assert True
-
-
-def test_write_tile():
-    assert True
-
-
 def test_evaluate():
-    world = np.zeros((3, 3, 8), dtype=bool)
+    world = np.zeros((3, 3), dtype=np.uint8)
     
     world[1][1] = create_dummy_tile(0, 11)
     world[1][0] = create_dummy_tile(0, 1)
@@ -65,8 +21,12 @@ def test_evaluate():
     assert evaluate(1, 1, world) == np.float32(12345.67)
 
 
-def test_arrow_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_write():
+    assert True
+
+
+def test_read_arrow():
+    world = np.zeros((5, 5), dtype=np.uint8)
     
     world[2][2] = create_dummy_tile(0, 11)
     world[2][1] = create_dummy_tile(0, 1)
@@ -91,8 +51,12 @@ def test_arrow_tile():
     assert evaluate(3, 3, world) == 1
 
 
-def test_addition_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_write_arrow():
+    assert True
+
+
+def test_addition():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 1)
     world[1][1] = create_dummy_tile(0, 11)
@@ -115,8 +79,8 @@ def test_addition_tile():
     assert isinstance(evaluate(2, 2, world), np.float32)
 
 
-def test_subtraction_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_subtraction():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 2)
     world[1][1] = create_dummy_tile(0, 11)
@@ -140,8 +104,8 @@ def test_subtraction_tile():
     assert isinstance(evaluate(2, 2, world), np.float32)
 
 
-def test_multiplication_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_multiplication():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 3)
     world[1][1] = create_dummy_tile(0, 11)
@@ -165,8 +129,8 @@ def test_multiplication_tile():
     assert isinstance(evaluate(2, 2, world), np.float32)
 
 
-def test_division_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_division():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 4)
     world[1][1] = create_dummy_tile(0, 11)
@@ -190,8 +154,8 @@ def test_division_tile():
     assert isinstance(evaluate(2, 2, world), np.float32)
 
 
-def test_floor_division_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_floor_division():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 5)
     world[1][1] = create_dummy_tile(0, 11)
@@ -215,8 +179,8 @@ def test_floor_division_tile():
     assert isinstance(evaluate(2, 2, world), np.int32)
 
 
-def test_modulo_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+def test_modulo():
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     world[2][2] = create_dummy_tile(1, 6)
     world[1][1] = create_dummy_tile(0, 11)
@@ -240,78 +204,8 @@ def test_modulo_tile():
     assert isinstance(evaluate(2, 2, world), np.float32)
 
 
-def test_equal_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
-
-    # int(4) == int(4) ?
-    world[2][2] = create_dummy_tile(1, 8)
-    world[1][1] = create_dummy_tile(0, 11)
-    world[3][3] = create_dummy_tile(0, 11)
-
-    world[1][0] = create_dummy_tile(0, 4)
-    world[3][2] = create_dummy_tile(0, 4)
-    
-    assert evaluate(2, 2, world) == True
-
-    # float(4.0) == int(4) ?
-    world[1][1] = create_dummy_tile(0, 12)
-
-    world[1][0] = create_dummy_tile(0, 0)
-    world[2][1] = create_dummy_tile(0, 0)
-    world[1][2] = create_dummy_tile(4, 0)
-    world[0][1] = create_dummy_tile(2, 0)
-
-    assert evaluate(2, 2, world) == True
-
-
-def test_greater_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
-
-    world[2][2] = create_dummy_tile(1, 9)
-    world[1][1] = create_dummy_tile(0, 11)
-    world[3][3] = create_dummy_tile(0, 11)
-
-    world[1][0] = create_dummy_tile(0, 4)
-    world[3][2] = create_dummy_tile(0, 3)
-    
-    assert evaluate(2, 2, world) == True
-
-    # float 4.0
-    world[1][1] = create_dummy_tile(0, 12)
-
-    world[1][0] = create_dummy_tile(0, 0)
-    world[2][1] = create_dummy_tile(0, 0)
-    world[1][2] = create_dummy_tile(4, 0)
-    world[0][1] = create_dummy_tile(2, 0)
-
-    assert evaluate(2, 2, world) == True
-
-
-def test_lesser_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
-
-    world[2][2] = create_dummy_tile(1, 10)
-    world[1][1] = create_dummy_tile(0, 11)
-    world[3][3] = create_dummy_tile(0, 11)
-
-    world[1][0] = create_dummy_tile(0, 4)
-    world[3][2] = create_dummy_tile(0, 5)
-    
-    assert evaluate(2, 2, world) == True
-
-    # float 4.0
-    world[1][1] = create_dummy_tile(0, 12)
-
-    world[1][0] = create_dummy_tile(0, 0)
-    world[2][1] = create_dummy_tile(0, 0)
-    world[1][2] = create_dummy_tile(4, 0)
-    world[0][1] = create_dummy_tile(2, 0)
-
-    assert evaluate(2, 2, world) == True
-
-
 def test_not_tile():
-    world = np.zeros((5, 5, 8), dtype=bool)
+    world = np.zeros((5, 5), dtype=np.uint8)
 
     # not(int(4) == int(4)) ?
     world[2][2] = create_dummy_tile(1, 8)
@@ -337,15 +231,98 @@ def test_not_tile():
     assert evaluate(4, 0, world) == True
 
 
-def test_ptr_tile():
+def test_equal_tile():
+    world = np.zeros((5, 5), dtype=np.uint8)
+
+    # int(4) == int(4) ?
+    world[2][2] = create_dummy_tile(1, 8)
+    world[1][1] = create_dummy_tile(0, 11)
+    world[3][3] = create_dummy_tile(0, 11)
+
+    world[1][0] = create_dummy_tile(0, 4)
+    world[3][2] = create_dummy_tile(0, 4)
+    
+    assert evaluate(2, 2, world) == True
+
+    # float(4.0) == int(4) ?
+    world[1][1] = create_dummy_tile(0, 12)
+
+    world[1][0] = create_dummy_tile(0, 0)
+    world[2][1] = create_dummy_tile(0, 0)
+    world[1][2] = create_dummy_tile(4, 0)
+    world[0][1] = create_dummy_tile(2, 0)
+
+    assert evaluate(2, 2, world) == True
+
+
+def test_greater_tile():
+    world = np.zeros((5, 5), dtype=np.uint8)
+
+    world[2][2] = create_dummy_tile(1, 9)
+    world[1][1] = create_dummy_tile(0, 11)
+    world[3][3] = create_dummy_tile(0, 11)
+
+    world[1][0] = create_dummy_tile(0, 4)
+    world[3][2] = create_dummy_tile(0, 3)
+    
+    assert evaluate(2, 2, world) == True
+
+    # float 4.0
+    world[1][1] = create_dummy_tile(0, 12)
+
+    world[1][0] = create_dummy_tile(0, 0)
+    world[2][1] = create_dummy_tile(0, 0)
+    world[1][2] = create_dummy_tile(4, 0)
+    world[0][1] = create_dummy_tile(2, 0)
+
+    assert evaluate(2, 2, world) == True
+
+
+def test_lesser_tile():
+    world = np.zeros((5, 5), dtype=np.uint8)
+
+    world[2][2] = create_dummy_tile(1, 10)
+    world[1][1] = create_dummy_tile(0, 11)
+    world[3][3] = create_dummy_tile(0, 11)
+
+    world[1][0] = create_dummy_tile(0, 4)
+    world[3][2] = create_dummy_tile(0, 5)
+    
+    assert evaluate(2, 2, world) == True
+
+    # float 4.0
+    world[1][1] = create_dummy_tile(0, 12)
+
+    world[1][0] = create_dummy_tile(0, 0)
+    world[2][1] = create_dummy_tile(0, 0)
+    world[1][2] = create_dummy_tile(4, 0)
+    world[0][1] = create_dummy_tile(2, 0)
+
+    assert evaluate(2, 2, world) == True
+
+
+
+def test_read_array():
     assert True
 
 
-def test_array_tile():
+def test_write_array():
     assert True
 
 
-def test_array_access_tile():
+def test_read_array_index():
+    assert True
+
+
+def test_write_array_index():
+    assert True
+
+
+def test_read_ptr():
+    assert True
+
+
+def test_write_ptr():
     assert True
 
 
@@ -358,4 +335,8 @@ def test_input_tile():
 
 
 def test_write_tile():
+    assert True
+
+
+def test_null_tile():
     assert True

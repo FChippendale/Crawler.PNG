@@ -1,5 +1,5 @@
 from src_py.utils import get_direction_offset, read_tile
-from src_py.tile_functions import evaluate
+from src_py.functions import evaluate
 
 class Crawler:
     def __init__(self, pos_x, pos_y, world):
