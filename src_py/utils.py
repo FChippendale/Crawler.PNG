@@ -20,7 +20,7 @@ def read_tile(x, y, world):
 
 def read_tile_data(x, y, world):
     direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
+    direction_offsets = get_direction_offset(((np.atleast_1d(direction)[:, None] + np.arange(0, 8, 2))%8)[None, :])
     centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
     data_positions = centers[:, None, :] + direction_offsets
     value_bytes = world[data_positions[..., 0], data_positions[..., 1]]
@@ -29,8 +29,8 @@ def read_tile_data(x, y, world):
 
 def write_tile_data(x, y, world, value):
     direction, _ = read_tile(x, y, world)
-    direction_offsets = get_direction_offset(np.atleast_1d(direction)[:, None] + ((np.arange(0, 8, 2))%8)[None, :])
+    direction_offsets = get_direction_offset(((np.atleast_1d(direction)[:, None] + np.arange(0, 8, 2))%8)[None, :])
     centers = np.stack([np.atleast_1d(x), np.atleast_1d(y)], axis=1)
     data_positions = centers[:, None, :] + direction_offsets
-    byte_data = np.frombuffer(value.tobytes(), dtype=np.uint8).reshape(len(np.atleast_1d(value)), 4, 1)
+    byte_data = np.frombuffer(value.tobytes(), dtype=np.uint8).reshape(len(np.atleast_1d(value)), 1, 4)
     world[data_positions[..., 0], data_positions[..., 1]] = byte_data

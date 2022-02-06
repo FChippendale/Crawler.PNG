@@ -235,6 +235,9 @@ def read_array(x, y, world):
     assert 0 <= y + (array_offset * array_length)[1] < world.shape[1], 'Array Y coordinate is out of range'
     
     data_locations = (array_offset[None, :] * np.arange(1, array_length+1)[:, None])
+    data_locations[:, 0] += x
+    data_locations[:, 1] += y
+
     assert np.all(world[data_locations[:, 0], data_locations[:, 1]] == world[x + type_offset[0], y + type_offset[1]])
     
     if array_type == 11:

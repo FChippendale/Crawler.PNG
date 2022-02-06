@@ -1,5 +1,7 @@
+from dis import Instruction
 from src_py.utils import get_direction_offset, read_tile
 from src_py.functions import evaluate
+
 
 class Crawler:
     def __init__(self, pos_x, pos_y, world):
@@ -26,9 +28,10 @@ class Crawler:
         if self.children:
             self.children[0]()
             return
-            
+
+        self.execute()  
         self.step()
-        self.execute()
+        
 
        
     def step(self):

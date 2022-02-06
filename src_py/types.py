@@ -42,5 +42,5 @@ def write_char(x, y, world, value):
         assert len(value) == 1, "Tried to write too many values to Char tile"
 
     value_data = value.encode('utf-32')
-    value_int = np.frombuffer(value_data[4:], dtype=np.int32)
+    value_int = np.frombuffer(value_data[4:], dtype=np.int32).squeeze()[()]
     write_tile_data(x, y, world, value_int)
