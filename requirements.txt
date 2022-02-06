@@ -1,7 +1,6 @@
 numpy
 Pillow
 argparse
-errno
 pytest
 pytest-cov
 pytest-github-actions-annotate-failures
